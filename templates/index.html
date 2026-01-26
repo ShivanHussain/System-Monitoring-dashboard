@@ -1,0 +1,534 @@
+<!doctype html>
+<html>
+  <head>
+    <title>System Monitoring Dashboard</title>
+
+    <!-- Favicon -->
+    <link
+      rel="icon"
+      type="image/png"
+      href="https://cdn-icons-png.flaticon.com/512/4712/4712109.png"
+    />
+
+    <!-- Apple / Mobile Icons -->
+    <link
+      rel="apple-touch-icon"
+      href="https://cdn-icons-png.flaticon.com/512/4712/4712109.png"
+    />
+    <meta name="theme-color" content="#667eea" />
+
+    <!-- Plotly -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <!-- Google Font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Icons -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 15px;
+        position: relative;
+        overflow-x: hidden;
+        overflow-y: hidden;
+      }
+
+      body::before {
+        content: "";
+        position: absolute;
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        border-radius: 50%;
+        top: -250px;
+        right: -250px;
+        animation: float 6s ease-in-out infinite;
+      }
+
+      body::after {
+        content: "";
+        position: absolute;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+        border-radius: 50%;
+        bottom: -200px;
+        left: -200px;
+        animation: float 8s ease-in-out infinite reverse;
+      }
+
+      @keyframes float {
+        0%, 100% { transform: translate(0, 0); }
+        50% { transform: translate(30px, 30px); }
+      }
+
+      .container {
+        width: 100%;
+        max-width: 1200px;
+        max-height: 95vh;
+        overflow-y: hidden;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 24px;
+        padding: 40px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        position: relative;
+        z-index: 1;
+        animation: slideUp 0.6s ease-out;
+      }
+
+      .container::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+      }
+
+      .container::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        border-radius: 10px;
+      }
+
+      .container::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #764ba2, #667eea);
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .header-icon {
+        font-size: 48px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 10px;
+        animation: pulse 2s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+      }
+
+      h1 {
+        color: #1a202c;
+        font-weight: 700;
+        font-size: 32px;
+        margin-bottom: 8px;
+      }
+
+      .subtitle {
+        color: #718096;
+        font-size: 14px;
+        font-weight: 400;
+      }
+
+      .stats-bar {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+      }
+
+      .stat-card {
+        flex: 1;
+        min-width: 200px;
+        background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+        border-radius: 16px;
+        padding: 20px;
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s ease;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .stat-icon {
+        font-size: 24px;
+        margin-bottom: 8px;
+      }
+
+      .stat-label {
+        font-size: 12px;
+        color: #718096;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #2d3748;
+        margin-top: 4px;
+      }
+
+      .gauges {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+        gap: 30px;
+        margin-bottom: 20px;
+      }
+
+      .gauge-card {
+        background: linear-gradient(135deg, #ffffff 0%, #f7fafc 100%);
+        border-radius: 20px;
+        padding: 10px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e2e8f0;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .gauge-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.4s ease;
+      }
+
+      .gauge-card:hover::before {
+        transform: scaleX(1);
+      }
+
+      .gauge-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+      }
+
+      .gauge-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+
+      .gauge-icon {
+        font-size: 28px;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      }
+
+      .gauge-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #2d3748;
+      }
+
+      .gauge-status {
+        margin-left: auto;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+
+      .status-normal {
+        background: #c6f6d5;
+        color: #22543d;
+      }
+
+      .status-warning {
+        background: #fef08a;
+        color: #854d0e;
+      }
+
+      .status-critical {
+        background: #fecaca;
+        color: #991b1b;
+      }
+
+      .alert {
+        margin-top: 20px;
+        padding: 20px;
+        background: linear-gradient(135deg, #ff4d4d 0%, #dc2626 100%);
+        color: white;
+        border-radius: 16px;
+        text-align: center;
+        font-weight: 500;
+        box-shadow: 0 10px 25px rgba(220, 38, 38, 0.3);
+        animation: alertPulse 2s ease-in-out infinite;
+      }
+
+      @keyframes alertPulse {
+        0%, 100% { box-shadow: 0 10px 25px rgba(220, 38, 38, 0.3); }
+        50% { box-shadow: 0 10px 35px rgba(220, 38, 38, 0.5); }
+      }
+
+      .alert i {
+        margin-right: 8px;
+        font-size: 18px;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 25px;
+        }
+
+        h1 {
+          font-size: 24px;
+        }
+
+        .gauges {
+          grid-template-columns: 1fr;
+        }
+
+        .stat-card {
+          min-width: 100%;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="header-icon">
+          <i class="fas fa-chart-line"></i>
+        </div>
+        <h1>System Monitoring Dashboard</h1>
+        <p class="subtitle">Real-time performance metrics and analytics</p>
+      </div>
+
+      <div class="stats-bar">
+        <div class="stat-card">
+          <div class="stat-icon">⚡</div>
+          <div class="stat-label">Status</div>
+          <div class="stat-value" id="system-status">Active</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🕐</div>
+          <div class="stat-label">Uptime</div>
+          <div class="stat-value" id="uptime">Loading...</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📊</div>
+          <div class="stat-label">CPU Cores</div>
+          <div class="stat-value" id="cpu-cores">{{ cpu_cores }}</div>
+        </div>
+      </div>
+
+      <div class="gauges">
+        <div class="gauge-card">
+          <div class="gauge-header">
+            <div class="gauge-icon">
+              <i class="fas fa-microchip"></i>
+            </div>
+            <div class="gauge-title">CPU Utilization</div>
+            <span class="gauge-status status-normal" id="cpu-status">Normal</span>
+          </div>
+          <div id="cpu-gauge"></div>
+        </div>
+
+        <div class="gauge-card">
+          <div class="gauge-header">
+            <div class="gauge-icon">
+              <i class="fas fa-memory"></i>
+            </div>
+            <div class="gauge-title">Memory Utilization</div>
+            <span class="gauge-status status-normal" id="mem-status">Normal</span>
+          </div>
+          <div id="mem-gauge"></div>
+        </div>
+      </div>
+
+      {% if message %}
+      <div class="alert">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>{{ message }}</span>
+      </div>
+      {% endif %}
+
+      <div class="alert" id="alert-box" style="display: none;">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span id="alert-message"></span>
+      </div>
+    </div>
+
+    <script>
+      // Actual values from template
+      const cpuValue = {{ cpu_percent }};
+      const memValue = {{ mem_percent }};
+      const uptimeSeconds = {{ uptime }};
+
+      // Format uptime
+      function formatUptime(seconds) {
+        const days = Math.floor(seconds / 86400);
+        const hours = Math.floor((seconds % 86400) / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+        
+        if (days > 0) {
+          return `${days}d ${hours}h ${minutes}m`;
+        } else if (hours > 0) {
+          return `${hours}h ${minutes}m`;
+        } else {
+          return `${minutes}m`;
+        }
+      }
+
+      // Update uptime display
+      document.getElementById('uptime').textContent = formatUptime(uptimeSeconds);
+
+      function getStatus(value) {
+        if (value < 50) return { class: 'status-normal', text: 'Normal' };
+        if (value < 85) return { class: 'status-warning', text: 'Warning' };
+        return { class: 'status-critical', text: 'Critical' };
+      }
+
+      // Update status badges
+      const cpuStatus = getStatus(cpuValue);
+      const memStatus = getStatus(memValue);
+      
+      document.getElementById('cpu-status').className = 'gauge-status ' + cpuStatus.class;
+      document.getElementById('cpu-status').textContent = cpuStatus.text;
+      document.getElementById('mem-status').className = 'gauge-status ' + memStatus.class;
+      document.getElementById('mem-status').textContent = memStatus.text;
+
+      // CPU Gauge
+      var cpuGauge = {
+        type: "indicator",
+        mode: "gauge+number",
+        value: cpuValue,
+        number: { 
+          suffix: "%",
+          font: { size: 48, family: "Inter", weight: 700 }
+        },
+        gauge: {
+          axis: { range: [0, 100], tickwidth: 2, tickcolor: "#cbd5e0" },
+          bar: { 
+            color: "#667eea",
+            thickness: 0.7
+          },
+          bgcolor: "#f7fafc",
+          borderwidth: 3,
+          bordercolor: "#e2e8f0",
+          steps: [
+            { range: [0, 50], color: "#c6f6d5" },
+            { range: [50, 85], color: "#fef08a" },
+            { range: [85, 100], color: "#fecaca" }
+          ],
+          threshold: {
+            line: { color: "#dc2626", width: 5 },
+            thickness: 0.8,
+            value: cpuValue
+          }
+        }
+      };
+
+      // Memory Gauge
+      var memGauge = {
+        type: "indicator",
+        mode: "gauge+number",
+        value: memValue,
+        number: { 
+          suffix: "%",
+          font: { size: 48, family: "Inter", weight: 700 }
+        },
+        gauge: {
+          axis: { range: [0, 100], tickwidth: 2, tickcolor: "#cbd5e0" },
+          bar: { 
+            color: "#764ba2",
+            thickness: 0.7
+          },
+          bgcolor: "#f7fafc",
+          borderwidth: 3,
+          bordercolor: "#e2e8f0",
+          steps: [
+            { range: [0, 50], color: "#c6f6d5" },
+            { range: [50, 85], color: "#fef08a" },
+            { range: [85, 100], color: "#fecaca" }
+          ],
+          threshold: {
+            line: { color: "#dc2626", width: 5 },
+            thickness: 0.8,
+            value: memValue
+          }
+        }
+      };
+
+      const layout = {
+        margin: { t: 10, b: 10, l: 20, r: 20 },
+        font: { family: "Inter" },
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)'
+      };
+
+      Plotly.newPlot('cpu-gauge', [cpuGauge], layout, {responsive: true});
+      Plotly.newPlot('mem-gauge', [memGauge], layout, {responsive: true});
+
+      // Show alert if critical
+      if (cpuValue >= 85 || memValue >= 85) {
+        const alertBox = document.getElementById('alert-box');
+        const alertMsg = document.getElementById('alert-message');
+        alertBox.style.display = 'block';
+        
+        if (cpuValue >= 85 && memValue >= 85) {
+          alertMsg.textContent = 'Critical Alert: CPU and Memory usage are dangerously high!';
+        } else if (cpuValue >= 85) {
+          alertMsg.textContent = 'Critical Alert: CPU usage is dangerously high!';
+        } else {
+          alertMsg.textContent = 'Critical Alert: Memory usage is dangerously high!';
+        }
+      }
+
+      // Simulate real-time uptime updates
+      let currentUptime = uptimeSeconds;
+      setInterval(() => {
+        currentUptime += 1;
+        document.getElementById('uptime').textContent = formatUptime(currentUptime);
+      }, 1000);
+    </script>
+  </body>
+</html>
