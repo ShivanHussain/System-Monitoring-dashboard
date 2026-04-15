@@ -529,6 +529,11 @@
         currentUptime += 1;
         document.getElementById('uptime').textContent = formatUptime(currentUptime);
       }, 1000);
+      
+      //reload page 10 sec
+      setInterval(() => {
+              window.location.reload();
+            }, 10000);
     </script>
   </body>
 </html>
