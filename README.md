@@ -104,7 +104,28 @@ See `requirements.txt` for the complete list of dependencies.
 
 ---
 
-## ✨ Future Improvements
+
+
+##  Docker Support
+
+###  Build Docker Image
+
+```bash
+docker build -t system-monitoring-dash .
+```
+
+### Run Docker Container
+
+```bash
+docker run -d -p 5001:5001 
+    --name system-dash
+    system-monitoring-dash
+```
+
+
+---
+
+##  Future Improvements
 
 - Auto-refresh using AJAX  
 - Disk & Network monitoring  
@@ -113,7 +134,7 @@ See `requirements.txt` for the complete list of dependencies.
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the **MIT License**.
 
