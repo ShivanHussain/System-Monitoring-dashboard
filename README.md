@@ -125,6 +125,23 @@ docker run -d -p 5001:5001
 
 ---
 
+##  Docker Compose 
+
+###  Start Application
+
+```bash
+docker-compose up -d
+```
+
+### Stop Application
+
+```bash
+docker-compose down
+```
+
+
+---
+
 ##  Future Improvements
 
 - Auto-refresh using AJAX  

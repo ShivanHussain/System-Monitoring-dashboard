@@ -1,0 +1,7 @@
+services:
+  web:
+    build: .
+    container_name: system-monitoring
+    ports:
+      - "5001:5001"
+
