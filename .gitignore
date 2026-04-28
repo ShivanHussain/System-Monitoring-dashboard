@@ -13,10 +13,11 @@ env/
 .venv/
 
 # ----------------------
-# Environment Variables
+# Environment Variables (Sensitive)
 # ----------------------
 .env
 .env.*
+!.env.example   # allow sample env file
 
 # ----------------------
 # Logs
@@ -35,6 +36,7 @@ instance/
 # ----------------------
 .pytest_cache/
 .coverage
+coverage.xml
 htmlcov/
 
 # ----------------------
@@ -53,9 +55,17 @@ Thumbs.db
 # Docker
 # ----------------------
 *.tar
+docker-compose.override.yml
 
 # ----------------------
-# Misc
+# Misc / Database
 # ----------------------
 *.sqlite3
 *.db
+
+# ----------------------
+# Build / Cache
+# ----------------------
+dist/
+build/
+*.egg-info/

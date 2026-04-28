@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   web:
     build: .
@@ -5,3 +7,6 @@ services:
     ports:
       - "5001:5001"
 
+  test:
+    build: .
+    command: pytest -v
