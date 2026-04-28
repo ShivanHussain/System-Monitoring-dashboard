@@ -5,3 +5,5 @@ itsdangerous==2.1.2
 psutil==5.8.0
 plotly==5.5.0
 tenacity==8.0.1
+pytest
+pytest-mock
