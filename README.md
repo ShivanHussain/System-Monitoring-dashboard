@@ -3,7 +3,7 @@
 A modern **System Monitoring Dashboard** built using **Python Flask** and **psutil** that displays real-time CPU and Memory usage of the server.  
 The dashboard features an interactive UI with **Plotly gauges**, uptime tracking, and alert notifications for high resource utilization.
 
----
+---------------------------------------------------------
 
 ##  Features
 
