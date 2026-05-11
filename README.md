@@ -15,7 +15,7 @@ The dashboard features an interactive UI with **Plotly gauges**, uptime tracking
 - Modern, responsive UI with animations  
 - Interactive gauges using Plotly  
 
----
+-------------------------------------------------------------
 
 ## Tech Stack
 
