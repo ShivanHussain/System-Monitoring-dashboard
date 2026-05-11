@@ -37,7 +37,7 @@ The dashboard features an interactive UI with **Plotly gauges**, uptime tracking
 └── README.md
 ```
 
----
+-----------------------------------------------------------------
 
 ## Installation & Setup
 
