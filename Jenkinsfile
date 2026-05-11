@@ -1,25 +1,24 @@
 pipeline {
-    agent any
-
-    triggers {
-        githubPush()
-    }
+    agent { label 'agent2' }
 
     environment {
         IMAGE_NAME = "shivanhussain/system-monitoring-dashboard:latest"
+        REPORT_DIR = "trivy-reports"
+        EMAIL_TO  = "Your-Email-Address"
     }
 
     stages {
 
         stage('Clone') {
             steps {
-                git branch: 'main', url: 'https://github.com/ShivanHussain/System-Monitoring-dashboard.git'
+                git branch: 'main',
+                url: 'https://github.com/ShivanHussain/System-Monitoring-dashboard.git'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t monitor-app .'
+                sh 'docker build --no-cache -t monitor-app .'
             }
         }
 
@@ -27,8 +26,23 @@ pipeline {
             steps {
                 sh '''
                     echo "Running tests inside container..."
+                    docker run --rm monitor-app pytest tests/ -v
+                '''
+            }
+        }
 
-                    docker run --rm monitor-app pytest -v
+        stage('Trivy Scan') {
+            steps {
+                sh '''
+                    mkdir -p ${REPORT_DIR}
+
+                    echo "Running Trivy Scan..."
+
+                    trivy image \
+                    --severity HIGH,CRITICAL \
+                    --format table \
+                    -o ${REPORT_DIR}/trivy-report-${BUILD_NUMBER}.txt \
+                    monitor-app
                 '''
             }
         }
@@ -39,36 +53,62 @@ pipeline {
             }
         }
 
-        stage('Docker Login & Push') {
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerHub',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    sh '''
-                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-                        docker push $IMAGE_NAME
-                    '''
-                }
-            }
-        }
-
         stage('Deploy') {
             steps {
                 sh '''
-                    docker-compose down || true
-                    docker-compose up -d
+                    docker compose down || true
+                    docker compose up -d
                 '''
             }
         }
     }
 
     post {
+
         success {
+
+            emailext(
+                subject: "SUCCESS: Jenkins Build ${env.BUILD_NUMBER}",
+
+                body: """
+                Build Successful!
+
+                Job Name: ${env.JOB_NAME}
+                Build Number: ${env.BUILD_NUMBER}
+
+                Docker image built successfully.
+                Trivy scan completed.
+
+                Console log and Trivy report attached.
+                """,
+
+                to: "${env.EMAIL_TO}",
+
+                attachmentsPattern: "trivy-reports/trivy-report-${BUILD_NUMBER}.txt"
+            )
+
             echo "Pipeline succeeded!"
         }
+
         failure {
+
+            emailext(
+                subject: "FAILED: Jenkins Build ${env.BUILD_NUMBER}",
+
+                body: """
+                Build Failed!
+
+                Job Name: ${env.JOB_NAME}
+                Build Number: ${env.BUILD_NUMBER}
+
+                Check attached console log and Trivy report.
+                """,
+
+                to: "${env.EMAIL_TO}",
+
+                attachmentsPattern: "trivy-reports/trivy-report-${BUILD_NUMBER}.txt"
+            )
+
             echo "Pipeline failed!"
         }
     }
